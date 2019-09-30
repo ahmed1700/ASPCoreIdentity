@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using IdentitySystem.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace IdentitySystem
 {
@@ -33,7 +35,7 @@ namespace IdentitySystem
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            services.AddIdentity<IdentityUser, IdentityRole>(options=>
+            services.AddIdentity<AppUser, IdentityRole>(options=>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireUppercase = false;
@@ -42,7 +44,10 @@ namespace IdentitySystem
             })
                 .AddEntityFrameworkStores<IdentitySystemContext>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(config=> {
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddDbContext<IdentitySystemContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("IdentitySystemContext")));

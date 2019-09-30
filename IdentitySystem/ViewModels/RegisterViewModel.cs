@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IdentitySystem.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,6 +14,8 @@ namespace IdentitySystem.ViewModels
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
+        [ValidateDominName(_allowedDominName:"iteshare.com" , ErrorMessage ="Domin Name Must be iteshare.com")]
+        [Remote(action: "IsEmailExist" , controller:"Account")]
         public string Email { get; set; }
 
   
@@ -26,5 +30,8 @@ namespace IdentitySystem.ViewModels
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string Country { get; set; }
     }
 }

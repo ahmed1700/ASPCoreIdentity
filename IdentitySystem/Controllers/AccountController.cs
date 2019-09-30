@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentitySystem.Models;
 using IdentitySystem.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IdentitySystem.Controllers
 {
+    [AllowAnonymous]
     public class AccountController : Controller
     {
-        private readonly SignInManager<IdentityUser> sigInManger;
-        private readonly UserManager<IdentityUser> userManager;
-        public AccountController(SignInManager<IdentityUser> sigInManger, UserManager<IdentityUser> userManager)
+        private readonly SignInManager<AppUser> sigInManger;
+        private readonly UserManager<AppUser> userManager;
+        public AccountController(SignInManager<AppUser> sigInManger, UserManager<AppUser> userManager)
         {
             this.sigInManger = sigInManger;
             this.userManager = userManager;
@@ -29,10 +32,11 @@ namespace IdentitySystem.Controllers
             if (ModelState.IsValid)
             {
                 // 1 : Copy Data from RegisterViewModel to IdentityUser
-                IdentityUser user = new IdentityUser
+                AppUser user = new AppUser
                 {
                     UserName = userModel.Email,
                     Email = userModel.Email,
+                    Country = userModel.Country
                 };
                 // 2 : store user in DB :UserManager class
                 var result = await userManager.CreateAsync(user, userModel.Password);
@@ -66,7 +70,7 @@ namespace IdentitySystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel userModel)
+        public async Task<IActionResult> Login(LoginViewModel userModel , string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -74,11 +78,24 @@ namespace IdentitySystem.Controllers
                     await sigInManger.PasswordSignInAsync(userModel.Email, userModel.Password,userModel.RememberMe , false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    if (!string.IsNullOrEmpty(returnUrl))
+                        if (Url.IsLocalUrl(returnUrl))
+                        {
+                            return Redirect(returnUrl);
+                        }
+                    else
+                        return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError(string.Empty, "Invalid Email / Password");
             }
             return View(userModel);
+        }
+        [AcceptVerbs("Get" , "Post")]
+        public async Task<IActionResult> IsEmailExist(string email)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null) return Json(true);
+            else return Json($"The Email {email} is Already in Use");
         }
     }
 }

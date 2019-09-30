@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using IdentitySystem.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IdentitySystem.Controllers
 {
+
     public class CoursesController : Controller
     {
         private readonly IdentitySystemContext _context;
@@ -19,6 +21,7 @@ namespace IdentitySystem.Controllers
         }
 
         // GET: Courses
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Course.ToListAsync());
@@ -41,6 +44,7 @@ namespace IdentitySystem.Controllers
 
             return View(course);
         }
+
 
         // GET: Courses/Create
         public IActionResult Create()

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IdentitySystem.Models
 {
-    public class IdentitySystemContext : IdentityDbContext
+    public class IdentitySystemContext : IdentityDbContext<AppUser>
     {
         public IdentitySystemContext (DbContextOptions<IdentitySystemContext> options)
             : base(options)
